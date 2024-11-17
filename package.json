@@ -1,0 +1,22 @@
+{
+  "name": "wooo!",
+  "version": "0.0.1",
+  "description": "Wooo! - An encrypted journaling/notebook app.",
+  "type": "module",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "contributors": [
+    "Emil Meri <em223ve@student.lnu.se"
+  ],
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "dependencies": {
+    "nardus": "^1.0.2"
+  }
+}
