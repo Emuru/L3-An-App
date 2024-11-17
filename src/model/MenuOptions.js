@@ -8,7 +8,8 @@
 export class MenuOptions {
   constructor() {
     this.NEW_ENTRY = '1'
-    this.VIEW_ENTRIES = '2'
+    this.DELETE_ENTRY = '2'
+    this.VIEW_ENTRIES = '3'
     this.QUIT = 'q'
   }
 }

@@ -13,6 +13,7 @@ export class View {
     console.log('Wooo!')
     console.log('----------------------------')
     console.log(`${menuOption.NEW_ENTRY}. New entry`)
+    console.log(`${menuOption.DELETE_ENTRY}. Delete entry`)
     console.log(`${menuOption.VIEW_ENTRIES}. View entries`)
     console.log(`${menuOption.QUIT}. Quit application`)
     const choice = await this.getInput('Make your choice: ')
@@ -70,6 +71,20 @@ export class View {
     console.log('\n')
     const choice = await this.getInput(
       'Please select the entry you wish to display: '
+    )
+    return choice
+  }
+
+  async displayEntries(entries) {
+    this.clearConsole()
+    console.log('Wooo! - Entries')
+    console.log('----------------------------')
+    entries.forEach((entry, index) => {
+      console.log(`${index + 1}. ${entry.getTitle()}`)
+    })
+    console.log('\n')
+    const choice = await this.getInput(
+      'Please select the entry you wish to delete: '
     )
     return choice
   }

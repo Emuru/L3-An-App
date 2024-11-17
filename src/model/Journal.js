@@ -15,17 +15,26 @@ export class Journal {
 
   addEntry(entry) {
     this.entries.push(entry)
+    this.#saveToFile('entries/entries.json')
+  }
+
+  deleteEntry(index) {
+    if (index >= 0 && index < this.entries.length) {
+      this.entries.splice(index, 1)
+      this.#saveToFile('entries/entries.json')
+    }
   }
 
   getEntries() {
+    this.#loadFromFile('entries/entries.json')
     return this.entries
   }
 
-  saveToFile(filename) {
+  #saveToFile(filename) {
     fs.writeFileSync(filename, JSON.stringify(this.entries), 'utf8')
   }
 
-  loadFromFile(filename) {
+  #loadFromFile(filename) {
     if (fs.existsSync(filename)) {
       const data = fs.readFileSync(filename, 'utf8')
       const entriesData = JSON.parse(data)

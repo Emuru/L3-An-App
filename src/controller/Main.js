@@ -29,8 +29,11 @@ export class Main {
       case this.menuOption.NEW_ENTRY:
         await this.newEntry()
         break
+      case this.menuOption.DELETE_ENTRY:
+        await this.listEntriesToDelete()
+        break
       case this.menuOption.VIEW_ENTRIES:
-        await this.listEntries()
+        await this.listEntriesToView()
         break
       case this.menuOption.QUIT:
         console.log('Quitting...')
@@ -55,18 +58,31 @@ export class Main {
     entry.encryptEntry(firstCipherKey, secondCipherKey)
 
     this.journal.addEntry(entry)
-    this.journal.saveToFile('entries/entries.json')
   }
 
-  async listEntries() {
-    this.journal.loadFromFile('entries/entries.json')
+  async listEntriesToDelete() {
     const entries = this.journal.getEntries()
 
     const choice = await this.view.displayEntries(entries)
 
     if (choice < 0 || choice >= entries.lengt) {
       console.log('Invalid choice, please try again.')
-      await this.listEntries()
+      await this.listEntriesToDelete()
+      return
+    }
+
+    const entryToDelete = choice - 1
+
+    this.journal.deleteEntry(entryToDelete)
+  }
+
+  async listEntriesToView() {
+    const entries = this.journal.getEntries()
+    const choice = await this.view.displayEntries(entries)
+
+    if (choice < 0 || choice >= entries.lengt) {
+      console.log('Invalid choice, please try again.')
+      await this.listEntriesToView()
       return
     }
 
@@ -78,6 +94,9 @@ export class Main {
   async displayEntryMenu(entry) {
     let running = true
     while (running) {
+      if (!entry) {
+        return false
+      }
       const choice = await this.view.displayEntry(entry)
       running = await this.handleEntryMenu(choice, entry)
     }
