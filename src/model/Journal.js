@@ -14,7 +14,7 @@ export class Journal {
   /**
    * A collection of entries.
    *
-   * @type {Prray}
+   * @type {Array}
    */
   #entries
 
