@@ -1,47 +1,68 @@
 /**
- * @file The entry collection class of the app.
- * @module src/model/EntryCollection
+ * @file The journal class of the app.
+ * @module src/model/Journal
  * @author Emil Meri <em223ve@student.lnu.se>
  * @version 0.0.1
  */
 
-import fs from 'fs'
-import { Entry } from './Entry.js'
+import { Persistence } from './Persinstence.js'
 
+/**
+ * Represents a journal containing entries.
+ */
 export class Journal {
+  /**
+   * A collection of entries.
+   *
+   * @type {Prray}
+   */
+  #entries
+
+  /**
+   * Handling saving and loading.
+   *
+   * @type {Persistence}
+   */
+  #persistence
+
+  /**
+   * Creates a new Journal instance.
+   */
   constructor() {
-    this.entries = []
+    this.#entries = []
+    this.#persistence = new Persistence()
+    this.#entries = this.#persistence.load()
   }
 
+  /**
+   * Adds an entry to the journal.
+   *
+   * @param {Entry} entry - The entry to add.
+   */
   addEntry(entry) {
-    this.entries.push(entry)
-    this.#saveToFile('entries/entries.json')
+    this.#entries.push(entry)
+    this.#persistence.save(this.#entries)
   }
 
-  deleteEntry(index) {
-    if (index >= 0 && index < this.entries.length) {
-      this.entries.splice(index, 1)
-      this.#saveToFile('entries/entries.json')
+  /**
+   * Deletes an entry from the journal.
+   *
+   * @param {Entry} entry - The entry to delete.
+   */
+  deleteEntry(entry) {
+    const index = this.#entries.indexOf(entry)
+    if (index >= 0 && index < this.#entries.length) {
+      this.#entries.splice(index, 1)
+      this.#persistence.save(this.#entries)
     }
   }
 
+  /**
+   * Retrieves all entries from the journal.
+   *
+   * @returns {Array} The list of entries.
+   */
   getEntries() {
-    this.#loadFromFile('entries/entries.json')
-    return this.entries
-  }
-
-  #saveToFile(filename) {
-    fs.writeFileSync(filename, JSON.stringify(this.entries), 'utf8')
-  }
-
-  #loadFromFile(filename) {
-    if (fs.existsSync(filename)) {
-      const data = fs.readFileSync(filename, 'utf8')
-      const entriesData = JSON.parse(data)
-      this.entries = entriesData.map(
-        (entryData) =>
-          new Entry(entryData.title, entryData.content, entryData.encrypted)
-      )
-    }
+    return this.#entries
   }
 }

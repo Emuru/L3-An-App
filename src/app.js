@@ -8,11 +8,14 @@
 import { Main } from './controller/Main.js'
 import { View } from './view/View.js'
 
+/**
+ * Initializes the application and starts the main menu.
+ */
 const view = new View()
 const main = new Main(view)
 
 try {
   main.displayMenu()
-} catch {
-  console.log('caught')
+} catch (e) {
+  console.error('Error: ' + e)
 }

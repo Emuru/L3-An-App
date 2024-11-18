@@ -9,33 +9,40 @@ import { AlbertiCipher, Alphabet } from 'nardus'
 
 export class Entry {
   /**
-   * Title string
+   * The title of the entry.
    *
-   * @type {String}
+   * @type {string}
    */
   #title
 
   /**
-   * Content string
+   * The content of the entry.
    *
-   * @type {String}
+   * @type {string}
    */
   #content
 
   /**
-   * Aplhabet string
+   * The alphabet used for encryption.
    *
-   * @type {String}
+   * @type {Alphabet}
    */
   #alphabet
 
   /**
-   * Entry encryption flag
+   * Indicates whether the entry is encrypted.
    *
    * @type {boolean}
    */
   #encrypted
 
+  /**
+   * Creates a new Entry.
+   *
+   * @param {string} title - The title of the entry.
+   * @param {string} content - The content of the entry.
+   * @param {boolean} - Whether the entry is encrypted.
+   */
   constructor(title, content, encrypted = false) {
     this.#title = title
     this.#content = content
@@ -43,6 +50,12 @@ export class Entry {
     this.#encrypted = encrypted
   }
 
+  /**
+   * Encrypts the entry content if it's not already encrypted.
+   *
+   * @param {number} firstCipherKey - The first cipher key.
+   * @param {number} secondCipherKey - The second cipher key.
+   */
   encryptEntry(firstCipherKey, secondCipherKey) {
     if (!this.#encrypted) {
       const cipher = new AlbertiCipher(
@@ -55,6 +68,12 @@ export class Entry {
     }
   }
 
+  /**
+   * Decrypts the entry content if it's encrypted.
+   *
+   * @param {number} firstCipherKey - The first cipher key.
+   * @param {number} secondCipherKey - The second cipher key.
+   */
   decryptEntry(firstCipherKey, secondCipherKey) {
     if (this.#encrypted) {
       const cipher = new AlbertiCipher(

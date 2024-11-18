@@ -5,130 +5,176 @@
  * @version 0.0.1
  */
 
-import { MenuOptions } from '../model/MenuOptions.js'
 import { Entry } from '../model/Entry.js'
 import { Journal } from '../model/Journal.js'
 
+/**
+ * Main controller class for the application.
+ */
 export class Main {
+  /**
+   * View object for user interaction.
+   * @type {View}
+   */
+  #view
+
+  /**
+   * Journal object for managing entries.
+   * @type {Journal}
+   */
+  #journal
+
+  /**
+   * Creates an instance of Main.
+   *
+   * @param {View} view - The view instance for user interaction.
+   */
   constructor(view) {
-    this.view = view
-    this.menuOption = new MenuOptions()
-    this.journal = new Journal()
+    this.#view = view
+    this.#journal = new Journal()
   }
 
+  /**
+   * Displays the main menu and handles user choices.
+   */
   async displayMenu() {
     let running = true
     while (running) {
-      const choice = await this.view.displayMenu(this.menuOption)
-      running = await this.handleMenu(choice)
+      const choice = await this.#view.displayMenu()
+      running = await this.#handleMenu(choice)
     }
   }
 
-  async handleMenu(choice) {
+  /**
+   * Handles the user's menu choice.
+   *
+   * @param {string} choice - The user's menu choice.
+   * @returns {boolean} Whether to continue running the menu loop.
+   */
+  async #handleMenu(choice) {
+    const createNewEntry = '1'
+    const listEntries = '2'
+    const quit = 'q'
+
     switch (choice) {
-      case this.menuOption.NEW_ENTRY:
-        await this.newEntry()
+      case createNewEntry:
+        await this.#createNewEntry()
         break
-      case this.menuOption.DELETE_ENTRY:
-        await this.listEntriesToDelete()
+      case listEntries:
+        await this.#viewEntriesList()
         break
-      case this.menuOption.VIEW_ENTRIES:
-        await this.listEntriesToView()
-        break
-      case this.menuOption.QUIT:
-        console.log('Quitting...')
+      case quit:
+        await this.#view.quitMessage()
+        this.#view.close()
         return false
       default:
-        console.log('Invalid choice. Please try again.')
+        await this.#view.displayInvalidChoiceMessage()
     }
     return true
   }
 
-  async newEntry() {
-    await this.handleNewEntry()
-  }
-
-  async handleNewEntry() {
-    const title = await this.view.requestTitle()
-    const content = await this.view.requestContent()
-    const firstCipherKey = await this.view.requestFirstCipherKey()
-    const secondCipherKey = await this.view.requestSecondCipherKey()
+  /**
+   * Creates a new journal entry and adds it to the journal.
+   */
+  async #createNewEntry() {
+    const title = await this.#view.requestTitle()
+    const content = await this.#view.requestContent()
+    const firstCipherKey = await this.#view.requestFirstCipherKey()
+    const secondCipherKey = await this.#view.requestSecondCipherKey()
 
     const entry = new Entry(title, content)
     entry.encryptEntry(firstCipherKey, secondCipherKey)
 
-    this.journal.addEntry(entry)
+    this.#journal.addEntry(entry)
+    await this.#view.successMessage()
   }
 
-  async listEntriesToDelete() {
-    const entries = this.journal.getEntries()
-
-    const choice = await this.view.displayEntries(entries)
-
-    if (choice < 0 || choice >= entries.lengt) {
-      console.log('Invalid choice, please try again.')
-      await this.listEntriesToDelete()
-      return
-    }
-
-    const entryToDelete = choice - 1
-
-    this.journal.deleteEntry(entryToDelete)
-  }
-
-  async listEntriesToView() {
-    const entries = this.journal.getEntries()
-    const choice = await this.view.displayEntries(entries)
+  /**
+   * Displays the list of journal entries and handles user's selection.
+   */
+  async #viewEntriesList() {
+    const entries = this.#journal.getEntries()
+    const choice = await this.#view.displayEntries(entries)
 
     if (choice < 0 || choice >= entries.lengt) {
-      console.log('Invalid choice, please try again.')
-      await this.listEntriesToView()
+      await this.#view.displayInvalidChoiceMessage()
+      await this.#viewEntriesList()
       return
     }
 
     const entryToDisplay = entries[choice - 1]
 
-    await this.displayEntryMenu(entryToDisplay)
+    await this.#displayEntryMenu(entryToDisplay)
   }
 
-  async displayEntryMenu(entry) {
+  /**
+   * Displays the entry menu for a specific entry and handles user choices.
+   *
+   * @param {Entry} entry - The journal entry to display and manage.
+   */
+  async #displayEntryMenu(entry) {
     let running = true
     while (running) {
       if (!entry) {
         return false
       }
-      const choice = await this.view.displayEntry(entry)
-      running = await this.handleEntryMenu(choice, entry)
+      const choice = await this.#view.displayEntry(entry)
+      running = await this.#handleEntryMenu(choice, entry)
     }
   }
 
-  async handleEntryMenu(choice, entry) {
-    switch (choice) {
-      case 'd':
-        await this.decryptEntry(entry)
+  /**
+   * Handles user actions for a specific journal entry.
+   *
+   * @param {string} choice - The user's choice.
+   * @param {Entry} entry - The journal entry to act upon.
+   * @returns {boolean} Whether to continue running the entry menu loop.
+   */
+  async #handleEntryMenu(choice, entry) {
+    const decryptEntry = 'd'
+    const encryptEntry = 'e'
+    const deleteEntry = 'del'
+
+    switch (choice.toLowerCase()) {
+      case decryptEntry:
+        await this.#decryptEntry(entry)
         break
-      case 'e':
-        await this.encryptEntry(entry)
+      case encryptEntry:
+        await this.#encryptEntry(entry)
         break
+      case deleteEntry:
+        this.#journal.deleteEntry(entry)
+        await this.#view.returnMessage()
+        return false
       case '':
-        console.log('Returning...')
-        return
+        await this.#view.returnMessage()
+        return false
       default:
-        await this.view.tryAgain()
+        await this.#view.displayInvalidChoiceMessage()
     }
     return true
   }
 
-  async decryptEntry(entry) {
-    const firstCipherKey = await this.view.requestFirstCipherKey()
-    const secondCipherKey = await this.view.requestSecondCipherKey()
+  /**
+   * Decrypts the given journal entry.
+   *
+   * @param {Entry} entry - The journal entry to decrypt.
+   */
+  async #decryptEntry(entry) {
+    const firstCipherKey = await this.#view.requestFirstCipherKey()
+    const secondCipherKey = await this.#view.requestSecondCipherKey()
 
     return entry.decryptEntry(firstCipherKey, secondCipherKey)
   }
 
-  async encryptEntry(entry) {
-    const firstCipherKey = await this.view.requestFirstCipherKey()
-    const secondCipherKey = await this.view.requestSecondCipherKey()
+  /**
+   * Encrypts the given journal entry.
+   *
+   * @param {Entry} entry - The journal entry to encrypt.
+   */
+  async #encryptEntry(entry) {
+    const firstCipherKey = await this.#view.requestFirstCipherKey()
+    const secondCipherKey = await this.#view.requestSecondCipherKey()
 
     return entry.encryptEntry(firstCipherKey, secondCipherKey)
   }
